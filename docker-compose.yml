@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  crm-api-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: my-crm-api:dev
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    volumes:
+      - ./src:/usr/src/app/src
+    networks:
+      - dev-network
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+
+  postgres_db:
+    image: postgres
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=pratikshya     
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+
+networks:
+  dev-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
